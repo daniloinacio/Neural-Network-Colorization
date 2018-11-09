@@ -47,13 +47,13 @@ if __name__ == '__main__':
 
 	for i in range(0, train_target.shape[0]):
 		LData[proj[i]].append(train_input[i,:]) 
-		LTarget[proj[i]].append(train_target[i,:])
+		LTarget[proj[i]].append(data[i,:])
 
 	LNNu = []
 	LNNv = []
 	for i in range(0, 9):
-		clf_U = MLPClassifier(activation='relu', hidden_layer_sizes=(10, 1,), max_iter=1000, learning_rate_init=0.001, verbose=True)
-		clf_V = MLPClassifier(activation='relu', hidden_layer_sizes=(10, 1,), max_iter=1000, learning_rate_init=0.001, verbose=True)
+		clf_U = MLPClassifier(activation='relu', hidden_layer_sizes=(1, 1,), max_iter=5, learning_rate_init=0.1, verbose=True)
+		clf_V = MLPClassifier(activation='relu', hidden_layer_sizes=(1, 1,), max_iter=5, learning_rate_init=0.1, verbose=True)
 	
 		Targetao = np.array(LTarget[i])
 		Datao = np.array(LData[i])
@@ -62,14 +62,18 @@ if __name__ == '__main__':
 		LNNu.append(clf_U)
 		LNNv.append(clf_V)
 
-	U = []
-	V = []
+	U = [[],[],[],[],[],[],[],[],[]]
+	V = [[],[],[],[],[],[],[],[],[]]
+	for i in range(0, 9):
+		U[i] = np.uint8(LNNu[i].predict(LData[i]))
+		V[i] = np.uint8(LNNv[i].predict(LData[i]))
+	u_predict = np.zeros((train_target.shape[0], 1))
+	v_predict = np.zeros((train_target.shape[0], 1))
 	for i in range(0, train_target.shape[0]):
-		U[i] = np.uint8(LNNu[proj[i]].predict(LData[proj[i]]))
-		V[i] = np.uint8(LNNv[proj[i]].predict(LData[proj[i]]))	
-	
-	new_U = U.reshape(img.shape[0], img.shape[1], 1)
-	new_V = V.reshape(img.shape[0], img.shape[1], 1)
+		u_predict[i] = list(U[proj[i]]).pop(0)
+		v_predict[i] = list(V[proj[i]]).pop(0)
+	new_U = np.uint8(u_predict.reshape(img.shape[0], img.shape[1], 1))
+	new_V = np.uint8(v_predict.reshape(img.shape[0], img.shape[1], 1))
 
 	new_img = cv2.merge([img_grey, new_U, new_V])
 	result = cv2.cvtColor(np.uint8(new_img), cv2.COLOR_LUV2BGR)
