@@ -10,7 +10,7 @@ if __name__ == '__main__':
 	
 	# Opening image and creating data
 
-	img = cv2.imread('paisagem7.jpg')
+	img = cv2.imread('paisagem6.jpg')
 	img_LUV = cv2.cvtColor(img, cv2.COLOR_BGR2LUV)
 	img_UV = img_LUV[:, :, 1:]
 
@@ -33,16 +33,12 @@ if __name__ == '__main__':
 
 	# indices no codebook correspondentes a cada pixel do data
 	proj = som.project_data(data)
-	print(proj)
-	print(proj.shape)
-	
 	# data quantizado (cores do codebook)
 	new_data = np.uint8(codebook[proj])
-	print(new_data.shape)
 	# Cria um vetor de regiões do L
 	train_input = fd.image_mapping(img_LUV[:, :, 0], 3)
 	train_target = new_data
-	Datao = [train_input,train_target]
+	Datao = [train_input,train_target] 
 
 
 	# Cria dois classificadores, um para classificar o proj U e outro o proj V
@@ -77,12 +73,16 @@ if __name__ == '__main__':
 	accuracy_proj = 100 * clf_proj.score(train_input, proj)
 	print('Accuracy proj: %.2lf' % accuracy_proj)	
 	
+	LDataTest = [[],[],[],[],[],[],[],[],[]]
+	for i in range(0, train_target.shape[0]):
+		LDataTest[predict_proj[i]].append(train_input[i,:])
+
 	# Predict U and V
 	U = [[],[],[],[],[],[],[],[],[]]
 	V = [[],[],[],[],[],[],[],[],[]]
 	for i in range(0, 9):
-		U[i] = np.uint8(LNNu[i].predict(LData[i]))
-		V[i] = np.uint8(LNNv[i].predict(LData[i]))
+		U[i] = np.uint8(LNNu[i].predict(LDataTest[i]))
+		V[i] = np.uint8(LNNv[i].predict(LDataTest[i]))
 	u_predict = np.zeros((train_target.shape[0], 1))
 	v_predict = np.zeros((train_target.shape[0], 1))
 	for i in range(0, train_target.shape[0]):
