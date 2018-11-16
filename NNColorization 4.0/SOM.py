@@ -5,6 +5,7 @@ import random
 import format_data as fd
 from sklearn.neural_network import MLPClassifier
 
+NI = 6
 
 if __name__ == '__main__':
 	
@@ -42,13 +43,19 @@ if __name__ == '__main__':
 
 
 	# Cria dois classificadores, um para classificar o proj U e outro o proj V
-	clf_proj = MLPClassifier(activation='relu', hidden_layer_sizes=(20, 20,), max_iter=1000, learning_rate_init=0.001, verbose=True)
+	clf_proj = MLPClassifier(activation='relu', hidden_layer_sizes=(15, 25,), max_iter=1000, learning_rate_init=0.001, verbose=True)
 	clf_proj.fit(train_input, proj)
 
 
 	# Divide os píxeis de acordo com os clusters para o qual foi mapeado no SOM
-	LData = [[],[],[],[],[],[],[],[],[]]
-	LTarget = [[],[],[],[],[],[],[],[],[]]
+	LData, LTarget, U, V, LDataTest = [], [], [], [], []
+	for i in range(NI*NI):
+		LData.append([])
+		LTarget.append([])
+		U.append([])
+		V.append([])
+		LDataTest.append([])
+
 
 	for i in range(0, train_target.shape[0]):
 		LData[proj[i]].append(train_input[i,:]) 
@@ -57,7 +64,7 @@ if __name__ == '__main__':
 	# Cria e treina um classificador para cada grupo de pixeis separados acima
 	LNNu = []
 	LNNv = []
-	for i in range(0, 9):
+	for i in range(0, NI*NI):
 		clf_U = MLPClassifier(activation='relu', hidden_layer_sizes=(2,), max_iter=10, learning_rate_init=0.001, verbose=True)
 		clf_V = MLPClassifier(activation='relu', hidden_layer_sizes=(2,), max_iter=10, learning_rate_init=0.001, verbose=True)
 	
@@ -73,14 +80,11 @@ if __name__ == '__main__':
 	accuracy_proj = 100 * clf_proj.score(train_input, proj)
 	print('Accuracy proj: %.2lf' % accuracy_proj)	
 	
-	LDataTest = [[],[],[],[],[],[],[],[],[]]
 	for i in range(0, train_target.shape[0]):
 		LDataTest[predict_proj[i]].append(train_input[i,:])
 
 	# Predict U and V
-	U = [[],[],[],[],[],[],[],[],[]]
-	V = [[],[],[],[],[],[],[],[],[]]
-	for i in range(0, 9):
+	for i in range(0, NI*NI):
 		U[i] = np.uint8(LNNu[i].predict(LDataTest[i]))
 		V[i] = np.uint8(LNNv[i].predict(LDataTest[i]))
 	u_predict = np.zeros((train_target.shape[0], 1))
@@ -98,6 +102,7 @@ if __name__ == '__main__':
 	cv2.imshow('original V', img_UV[:, :, 1])
 	cv2.imshow('predict V', np.uint8(new_V))
 	cv2.imshow('original', img)
-	cv2.imshow('test', result)	
+	cv2.imshow('test', result)
+	cv2.imsave("result.png", result)	
 	cv2.waitKey(0)
 	cv2.destroyAllWindows()
