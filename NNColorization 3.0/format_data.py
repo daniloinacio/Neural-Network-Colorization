@@ -25,7 +25,12 @@ def image_mapping(image, k):
 
 	return regions
 
+def getPSNR(true, pred):
+    giantTrueMatrix = np.concatenate((true[0], true[1], true[2]), 1)
+    giantPredMatrix = np.concatenate((pred[0], pred[1], pred[2]), 1)
 
+    return cv2.PSNR(giantTrueMatrix, giantPredMatrix)
+    
 # Create data with k*k features and 2 targets
 def format_data(image, k):
 
