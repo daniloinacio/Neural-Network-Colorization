@@ -22,7 +22,7 @@ if __name__ == '__main__':
 	dataset = reduced_data
 
 	# Criação da SOM
-	som = sompy.SOMFactory.build(dataset, mapsize=[200, 200], mask=None, mapshape='planar',
+	som = sompy.SOMFactory.build(dataset, mapsize=[3, 3], mask=None, mapshape='planar',
 	 lattice='rect', normalization='var', initialization='pca', neighborhood='gaussian', training='batch', name='coloring')
 
 	som.train(n_job=1, verbose='info', train_rough_len=None, train_finetune_len=None)
