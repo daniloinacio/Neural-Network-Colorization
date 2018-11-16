@@ -23,7 +23,7 @@ if __name__ == '__main__':
 	dataset = reduced_data
 
 	# Criação da SOM
-	som = sompy.SOMFactory.build(dataset, mapsize=[3, 3], mask=None, mapshape='planar',
+	som = sompy.SOMFactory.build(dataset, mapsize=[NI, NI], mask=None, mapshape='planar',
 	lattice='rect', normalization='var', initialization='pca', neighborhood='gaussian', training='batch', name='coloring')
 
 	som.train(n_job=1, verbose='info', train_rough_len=None, train_finetune_len=None)
@@ -51,6 +51,7 @@ if __name__ == '__main__':
 	LData, LTarget, U, V, LDataTest = [], [], [], [], []
 	for i in range(NI*NI):
 		LData.append([])
+		print(len(LData))
 		LTarget.append([])
 		U.append([])
 		V.append([])
@@ -103,6 +104,6 @@ if __name__ == '__main__':
 	cv2.imshow('predict V', np.uint8(new_V))
 	cv2.imshow('original', img)
 	cv2.imshow('test', result)
-	cv2.imsave("result.png", result)	
+	cv2.imwrite("result.png", result)	
 	cv2.waitKey(0)
 	cv2.destroyAllWindows()
