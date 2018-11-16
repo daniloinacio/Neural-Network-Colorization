@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
 
 	# Cria dois classificadores, um para classificar o proj U e outro o proj V
-	clf_proj = MLPClassifier(activation='relu', hidden_layer_sizes=(15, 25,), max_iter=1000, learning_rate_init=0.001, verbose=True)
+	clf_proj = MLPClassifier(activation='relu', hidden_layer_sizes=(200, 200,), max_iter=1000, learning_rate_init=0.001, verbose=True)
 	clf_proj.fit(train_input, proj)
 
 
@@ -53,8 +53,6 @@ if __name__ == '__main__':
 		LData.append([])
 		print(len(LData))
 		LTarget.append([])
-		U.append([])
-		V.append([])
 		LDataTest.append([])
 
 
@@ -75,7 +73,6 @@ if __name__ == '__main__':
 		clf_V.fit(Datao, Targetao[:, 1])
 		LNNu.append(clf_U)
 		LNNv.append(clf_V)
-
 	# Predict proj
 	predict_proj = np.uint8(clf_proj.predict(train_input))
 	accuracy_proj = 100 * clf_proj.score(train_input, proj)
@@ -84,10 +81,16 @@ if __name__ == '__main__':
 	for i in range(0, train_target.shape[0]):
 		LDataTest[predict_proj[i]].append(train_input[i,:])
 
+
 	# Predict U and V
 	for i in range(0, NI*NI):
-		U[i] = np.uint8(LNNu[i].predict(LDataTest[i]))
-		V[i] = np.uint8(LNNv[i].predict(LDataTest[i]))
+		LDataTest[i] = np.array(LDataTest[i])
+		if len(LDataTest[i]) != 0:
+			U.append(np.uint8(LNNu[i].predict(LDataTest[i])))
+			V.append(np.uint8(LNNv[i].predict(LDataTest[i])))
+		else:
+			U.append(0)
+			V.append(0)
 	u_predict = np.zeros((train_target.shape[0], 1))
 	v_predict = np.zeros((train_target.shape[0], 1))
 	for i in range(0, train_target.shape[0]):
