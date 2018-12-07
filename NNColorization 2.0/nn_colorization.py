@@ -11,6 +11,7 @@ import os.path
 from pathlib import Path
 import cv2
 
+
 def normalize(array):
     array = np.float32(array)
     max_valor = np.max(array)
@@ -25,6 +26,12 @@ def recover_image(Y, CrCb):
     image_result = cv2.cvtColor(cv2.merge([Y, Cr_rec, Cb_rec]), cv2.COLOR_YCrCb2BGR)
 
     return image_result
+
+
+def getPSNR(true, pred):
+    giantTrueMatrix = np.concatenate((true[0], true[1], true[2]), 1)
+    giantPredMatrix = np.concatenate((pred[0], pred[1], pred[2]), 1)
+    return cv2.PSNR(true, pred)
 
 
 def main():
@@ -42,7 +49,7 @@ def main():
         sys.exit()
 
     # Load data
-    data = np.loadtxt("%s" % sys.argv[FIRST_ARG], dtype='uint8')
+    data = np.loadtxt("%s.data" % sys.argv[FIRST_ARG], dtype='uint8')
     features = data[:, 0:data.shape[1] - 2] / 255
     targets = data[:, data.shape[1] - 2:data.shape[1]] / 255
     '''
@@ -51,7 +58,7 @@ def main():
     [targets[:, 0], max_target1, min_target1] = normalize(targets[:, 0])
     [targets[:, 1], max_target2, min_target2] = normalize(targets[:, 1])
     '''
-    image = cv2.imread("pikachu.png")
+    image = cv2.imread("%s" % sys.argv[FIRST_ARG])
     Y, Cr, Cb = cv2.split(cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb))
     if len(sys.argv) > 2 and sys.argv[FLAG] == '-load':
         # Load the model
@@ -59,7 +66,7 @@ def main():
         neural_network = pickle.load(open(filename, 'rb'))
     else:
 
-        neural_network = MLPRegressor(activation='relu', hidden_layer_sizes=(200, 200), solver='adam',
+        neural_network = MLPRegressor(activation='relu', hidden_layer_sizes=(400, 400), solver='adam',
          max_iter=2000, verbose=True, random_state=17)
         neural_network.fit(features, targets)
 
@@ -69,11 +76,11 @@ def main():
     Cr_rec = np.uint8((max_target1 - min_target1) * prediction[:, 0].reshape(Cr.shape[0], Cr.shape[1]) + min_target1)
     Cb_rec = np.uint8((max_target2 - min_target2) * prediction[:, 1].reshape(Cb.shape[0], Cb.shape[1])  + min_target2)
     '''
-    
+
     prediction = prediction * 255
     Cr_rec = np.uint8(prediction[:, 0].reshape(Cr.shape[0], Cr.shape[1]))
     Cb_rec = np.uint8(prediction[:, 1].reshape(Cb.shape[0], Cb.shape[1]))
-    
+
     image_result = cv2.cvtColor(cv2.merge([Y, Cr_rec, Cb_rec]), cv2.COLOR_YCrCb2BGR)
 
     cv2.imshow('Original Cr', Cr)
@@ -82,18 +89,19 @@ def main():
     cv2.imshow('Teste Cr', Cr_rec)
     cv2.imshow('Teste Cb', Cb_rec)
     cv2.imshow('Teste resultante', image_result)
-
+    cv2.imwrite('result_%s' % sys.argv[FIRST_ARG], image_result)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
     score = neural_network.score(features, targets)
-
+    print("PSNR: %.2lf" % getPSNR(image, image_result))
     print("Accuracy of Cr and Cb prediction:  {}\n".format(score))
     resp = input("Save model?\n")
     if resp == "yes":
         filename = 'model.sav'
         pickle.dump(neural_network, open(filename, 'wb'))
         print("Model saved")
+
 
 if __name__ == '__main__':
     main()
